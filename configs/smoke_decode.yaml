@@ -1,0 +1,36 @@
+# Decode smoke test - produces decode-ready predictions with NO GPU / weights / dataset.
+# Emits the counterfactual 4-role yes/no layout plus first-token yes/no log-masses, which is
+# exactly what the offline decision-rule scripts consume.
+#
+# Real arm:
+#   python run.py --config configs/smoke_decode.yaml
+# Perturbed arm:
+#   python run.py --config configs/smoke_decode.yaml --set 'eval.perturb={"mode":"shuffle","seed":1234}'
+# Then contrast the two:
+#   python scripts/contrastive_decode.py --real REAL/predictions.jsonl --pert PERT/predictions.jsonl
+model:
+  kind: mock
+  top_k: 4
+
+dataset:
+  kind: mock
+  num_samples: 40           # kept divisible by 4 so the role groups stay intact
+  pair_mode: true           # counterfactual 4-role yes/no groups
+
+video:
+  frame_source: uniform
+
+prompt:
+  task: yesno
+
+generation:
+  max_new_tokens: 8
+
+eval:
+  results_dir: ../results
+  seed: 1234
+  log_yesno_logits: true    # first-token yes/no log-masses the decode scripts read
+
+wandb:
+  mode: disabled
+  project: vlm-benchmark

@@ -1,0 +1,55 @@
+# Segment-swap decoding on MotionBlind physics — sibling-quality arm.
+# PERTURBED arm: identical to the MotionBlind calibration recipe (uniform k24, native, timestamps on, task yesno,
+# first-token yes/no logit masses logged) plus eval.perturb: segswap — cuts the selected frames at the
+# midpoint and swaps the two halves (each kept forward), keeping content and ascending timestamps, so the
+# perturbed logits carry every shortcut EXCEPT macro temporal order. A locally-natural sibling that flips
+# the macro before/after relation with one splice discontinuity. Order-invariant physics (force/speed/
+# magnitude) should barely move (floor falls back to native); order-sensitive categories may move. The
+# REAL arm is an unperturbed run of eagle_motionblind_calib.yaml. Decode offline with
+# scripts/mb_reverse_decode.py (pure-difference + plausibility-floor, per category + overall).
+#
+
+experiment:
+  type: contrastive-decoding
+  technique: video-perturbation-segswap
+
+model:
+  kind: eagle
+  checkpoint: nvidia/Eagle2.5-8B
+  attn_implementation: sdpa
+
+dataset:
+  kind: motionblind
+  root: /path/to/datasets/motionblind
+  annotations: data_db.jsonl
+
+video:
+  frame_source: uniform
+  candidates: 32
+  top_k: 24
+  candidate_resize: null
+  max_dynamic_tiles: 1
+  pass_timestamps: true
+
+prompt:
+  task: yesno
+
+generation:
+  max_new_tokens: 8
+  do_sample: false
+
+eval:
+  seed: 1234
+  sample_timeout_s: 300
+  results_dir: ../results
+  log_yesno_logits: true
+  perturb:
+    mode: segswap          # swap the two halves at the midpoint; timestamps stay ascending
+    cut: 0.5
+    seed: 1234             # inert for segswap (deterministic); kept to mirror the shuffle recipe
+
+wandb:
+  project: vlm-benchmark
+  group: contrastive-decoding
+  name: eagle-mbseg-pert
+  log_every: 20

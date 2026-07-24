@@ -1,0 +1,54 @@
+# Video-side contrastive decoding on MotionBlind with the SAME frame-shuffle sibling used on
+# TimeBlind, so the destroy-sibling and 4-seed-ensemble
+# rows use one reference (shuffle) across both datasets. PERTURBED arm: identical to the MotionBlind calibration recipe
+# (uniform k24, native, timestamps on, task yesno, first-token yes/no logit masses logged) plus
+# eval.perturb: shuffle — permutes the selected frames' order (timestamps stay ascending), the maximal
+# temporal scramble. The REAL arm is an unperturbed run of eagle_motionblind_calib.yaml.
+# Seed 1234 is the single-shuffle arm; seeds 2/3/4 (the variance-reduction ensemble) reuse this config via
+# an eval.perturb seed override (--set 'eval.perturb={"mode":"shuffle","seed":N}'), mirroring the
+# TimeBlind shuffle-seed family. Decode offline (scripts/contrastive_decode.py: --pert one file for the single arm, four files to
+# average lo_pert for the ensemble).
+
+experiment:
+  type: contrastive-decoding
+  technique: video-perturbation-shuffle
+
+model:
+  kind: eagle
+  checkpoint: nvidia/Eagle2.5-8B
+  attn_implementation: sdpa
+
+dataset:
+  kind: motionblind
+  root: /path/to/datasets/motionblind
+  annotations: data_db.jsonl
+
+video:
+  frame_source: uniform
+  candidates: 32
+  top_k: 24
+  candidate_resize: null
+  max_dynamic_tiles: 1
+  pass_timestamps: true
+
+prompt:
+  task: yesno
+
+generation:
+  max_new_tokens: 8
+  do_sample: false
+
+eval:
+  seed: 1234
+  sample_timeout_s: 300
+  results_dir: ../results
+  log_yesno_logits: true
+  perturb:
+    mode: shuffle          # permute frame order (maximal scramble); timestamps stay ascending
+    seed: 1234             # single-shuffle arm; PSEED overrides for the s2/s3/s4 ensemble
+
+wandb:
+  project: vlm-benchmark
+  group: contrastive-decoding
+  name: eagle-mbshuf-s1234
+  log_every: 20

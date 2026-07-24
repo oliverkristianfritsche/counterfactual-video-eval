@@ -1,0 +1,49 @@
+# MotionBlind frame-selection SWEEP at native answer resolution.
+# Eagle answers on the native-resolution selected frames (candidate_resize: null). HORNet still
+# scores its 32 candidates at 288 internally (required by its encoder); selection is unchanged,
+# only the resolution Eagle answers on. Drives one cell per (frame_source, top_k) via overrides:
+#   run.py --config configs/eagle_motionblind_sweep_native.yaml --set video.frame_source=random --set video.top_k=8
+experiment:
+  type: "Sampling and layout"
+  technique: "frame-selection sweep (native res)"
+
+model:
+  kind: eagle
+  checkpoint: nvidia/Eagle2.5-8B
+  attn_implementation: sdpa
+
+dataset:
+  kind: motionblind
+  root: /path/to/datasets/motionblind   # flattened export root (contains data_db.jsonl + category dirs)
+  annotations: data_db.jsonl                        # canonical (NOT data.jsonl)
+
+video:
+  frame_source: uniform            # per-cell override: uniform | random | hornet
+  top_k: 8                         # per-cell override: number of frames selected (1|4|8|16|24)
+  candidates: 32                   # shared candidate pool size
+  candidate_resize: null           # resolution Eagle answers on (null = native)
+  hornet_score_resize: 288         # resolution HORNet scores at (its policy needs 288; affects selection only, not Eagle)
+  pass_timestamps: true            # put the selected frames' real timestamps in the prompt
+  fps: 8                           # nominal fps label in the prompt
+  hornet_checkpoint: /path/to/hornet/checkpoint-0.550.pt   # hornet imports the authors' code from HORNet/ (see README)
+
+prompt:
+  task: yesno                      # MotionBlind is all yes/no (official suffix)
+
+generation:
+  max_new_tokens: 128
+  do_sample: false
+
+eval:
+  results_dir: ../results
+  seed: 0
+  sample_timeout_s: 300
+  fail_fast: false
+
+wandb:
+  mode: online
+  project: vlm-benchmark
+  entity: null
+  group: motionblind-sweep-native
+  tags: [eagle2.5-8b, motionblind, sweep, native-res]
+  log_samples: 50

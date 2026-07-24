@@ -1,0 +1,22 @@
+# Harness core (smoke test and the offline decode scripts run with just these)
+pyyaml
+wandb
+numpy
+
+# Paper-exact metrics (F1-Lev). Without these the harness falls back to
+# pure-python Levenshtein (identical) + identity lemmatizer (NOT identical —
+# summary.json's environment.metric_impl says which ran).
+python-Levenshtein
+spacy
+# after installing spacy:  python -m spacy download en_core_web_sm
+
+# Real Eagle runs on GPU
+torch
+transformers==4.55.4   # Eagle2.5-8B model-card pin (config.json 4.51.0 is stale; 5.x breaks remote code)
+accelerate
+peft            # required by Eagle2.5-8B remote modeling code
+decord          # video decoding, HORNet protocol
+pillow
+
+# Optional harness front-end (only needed when the matching config option is used)
+opencv-python   # optical-flow overlay (eval.flow_overlay) and frame-level image ops

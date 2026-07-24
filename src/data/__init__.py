@@ -1,0 +1,5 @@
+from . import mock as _mock                # noqa: F401  (registers "mock")
+from . import motionblind as _motionblind  # noqa: F401  (registers "motionblind")
+from . import motionblind_contrastive as _motionblind_contrastive  # noqa: F401  (registers "motionblind_contrastive")
+from . import timeblind as _timeblind      # noqa: F401  (registers "timeblind")
+from . import timeblind_2afc as _timeblind_2afc  # noqa: F401  (registers "timeblind_2afc")

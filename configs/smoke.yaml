@@ -1,0 +1,26 @@
+# Smoke test — exercises the whole harness with NO GPU / weights / dataset.
+# Run: python run.py --config configs/smoke.yaml
+model:
+  kind: mock
+  top_k: 4
+
+dataset:
+  kind: mock
+  num_samples: 40
+
+video:
+  frame_source: uniform     # mock ignores this, real adapters honor it
+
+prompt:
+  task: choice              # msqa | general | choice | yesno | custom
+
+generation:
+  max_new_tokens: 8
+
+eval:
+  results_dir: ../results
+  seed: 1234
+
+wandb:
+  mode: disabled            # flip to offline/online to test W&B
+  project: vlm-benchmark

@@ -1,0 +1,71 @@
+{
+  "run_name": "eagle-tbnat-uniform-k24",
+  "model": "eagle",
+  "dataset": "timeblind",
+  "frame_source": "uniform",
+  "sampling": "uniform-k24of32",
+  "top_k": 24,
+  "fps": null,
+  "task": "yesno",
+  "experiment": {
+    "type": "Sampling and layout",
+    "technique": "frame-selection sweep (native res)"
+  },
+  "metrics": {
+    "total": 2400,
+    "errors": 0,
+    "num_videos": 600,
+    "instance_accuracy": 0.2733333333333333,
+    "accuracy": 0.6820833333333334,
+    "correct": 1637,
+    "invalid_rate": 0.0,
+    "choice_dist": {
+      "1": 1389,
+      "0": 1011
+    },
+    "q_acc": 0.39,
+    "v_acc": 0.5141666666666667,
+    "i_acc": 0.2733333333333333,
+    "num_complete_groups": 600,
+    "q_acc/multiple_choice": 0.46,
+    "v_acc/multiple_choice": 0.62,
+    "i_acc/multiple_choice": 0.38,
+    "q_acc/yes_no": 0.32,
+    "v_acc/yes_no": 0.4083333333333333,
+    "i_acc/yes_no": 0.16666666666666666,
+    "accuracy/multiple_choice": 0.7166666666666667,
+    "accuracy/yes_no": 0.6475,
+    "frame_sel_s/mean": 0.6095001202825612,
+    "frame_sel_s/p50": 0.5876714806072414,
+    "frame_sel_s/p90": 0.9887465324252843,
+    "vlm_proc_s/mean": 0.57595017915611,
+    "vlm_proc_s/p50": 0.5917388659436256,
+    "vlm_proc_s/p90": 0.6789855467621236,
+    "avg_frames": 24.0,
+    "throughput_samples_per_s": 0.8435613036442905,
+    "gpu_peak_gb": 17.607,
+    "top_k": 24,
+    "candidates": 32,
+    "sticky_rate": 0.5841666666666666,
+    "sticky_prior": 0.512403125,
+    "sticky_rate/multiple_choice": 0.5133333333333333,
+    "sticky_prior/multiple_choice": 0.5002,
+    "sticky_rate/yes_no": 0.655,
+    "sticky_prior/yes_no": 0.5435125
+  },
+  "environment": {
+    "harness_version": "0.2.0",
+    "python": "3.10.18",
+    "platform": "Linux-5.14.0-362.13.1.el9_3.x86_64-x86_64-with-glibc2.34",
+    "hostname": "d4053",
+    "seed": 0,
+    "metric_impl": {
+      "levenshtein": "pure-python (identical values)",
+      "lemmatizer": "spacy/en_core_web_sm (matches paper)"
+    },
+    "torch": "2.5.1+cu121",
+    "transformers": "4.55.4",
+    "wandb": "0.23.0",
+    "numpy": "2.2.6"
+  }
+}

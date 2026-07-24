@@ -1,0 +1,46 @@
+# Yes/no bias calibration on MotionBlind (isolated protocol).
+# A normal native yes/no run with first-token yes/no log-masses logged (eval.log_yesno_logits);
+# calibration is offline (scripts/calibrate_yesno.py). The null-input arm reuses the black-frame
+# flag: add --set video.blank_frames=true for the content-free bias pass.
+# TimeBlind reuses its own config + the same flag.
+
+model:
+  kind: eagle
+  checkpoint: nvidia/Eagle2.5-8B
+  attn_implementation: sdpa
+
+dataset:
+  kind: motionblind
+  root: /path/to/datasets/motionblind
+  annotations: data_db.jsonl
+
+video:
+  frame_source: uniform
+  candidates: 32
+  top_k: 24                 # match the native sweep; calibration is orthogonal to the budget
+  candidate_resize: null    # native (answer-resolution protocol)
+  max_dynamic_tiles: 1
+  pass_timestamps: true
+
+prompt:
+  task: yesno
+
+generation:
+  max_new_tokens: 8         # first-token yes/no is all calibration needs; keep it tight
+  do_sample: false
+
+eval:
+  seed: 1234
+  sample_timeout_s: 300
+  results_dir: ../results
+  log_yesno_logits: true    # log first-token yes/no log-masses for offline calibration
+
+wandb:
+  project: vlm-benchmark
+  group: yesno-calibration
+  name: eagle-mbcal-uniform-k24
+  log_every: 20
+
+experiment:
+  type: calibration
+  technique: yesno-bias-calibration

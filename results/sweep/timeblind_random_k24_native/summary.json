@@ -1,0 +1,71 @@
+{
+  "run_name": "eagle-tbnat-random-k24",
+  "model": "eagle",
+  "dataset": "timeblind",
+  "frame_source": "random",
+  "sampling": "random-k24of32",
+  "top_k": 24,
+  "fps": null,
+  "task": "yesno",
+  "experiment": {
+    "type": "Sampling and layout",
+    "technique": "frame-selection sweep (native res)"
+  },
+  "metrics": {
+    "total": 2400,
+    "errors": 0,
+    "num_videos": 600,
+    "instance_accuracy": 0.25833333333333336,
+    "accuracy": 0.6775,
+    "correct": 1626,
+    "invalid_rate": 0.0,
+    "choice_dist": {
+      "1": 1384,
+      "0": 1016
+    },
+    "q_acc": 0.38,
+    "v_acc": 0.5066666666666667,
+    "i_acc": 0.25833333333333336,
+    "num_complete_groups": 600,
+    "q_acc/multiple_choice": 0.445,
+    "v_acc/multiple_choice": 0.6116666666666667,
+    "i_acc/multiple_choice": 0.35333333333333333,
+    "q_acc/yes_no": 0.315,
+    "v_acc/yes_no": 0.40166666666666667,
+    "i_acc/yes_no": 0.16333333333333333,
+    "accuracy/multiple_choice": 0.7108333333333333,
+    "accuracy/yes_no": 0.6441666666666667,
+    "frame_sel_s/mean": 0.4559028328217876,
+    "frame_sel_s/p50": 0.4114534240216017,
+    "frame_sel_s/p90": 0.7863988533616066,
+    "vlm_proc_s/mean": 0.5413055545161478,
+    "vlm_proc_s/p50": 0.5101813967339694,
+    "vlm_proc_s/p90": 0.6624261063057928,
+    "avg_frames": 24.0,
+    "throughput_samples_per_s": 1.0027994275795422,
+    "gpu_peak_gb": 17.606,
+    "top_k": 24,
+    "candidates": 32,
+    "sticky_rate": 0.595,
+    "sticky_prior": 0.5117555555555555,
+    "sticky_rate/multiple_choice": 0.5316666666666666,
+    "sticky_prior/multiple_choice": 0.5001125,
+    "sticky_rate/yes_no": 0.6583333333333333,
+    "sticky_prior/yes_no": 0.5425347222222222
+  },
+  "environment": {
+    "harness_version": "0.2.0",
+    "python": "3.10.18",
+    "platform": "Linux-5.14.0-611.5.1.el9_7.x86_64-x86_64-with-glibc2.34",
+    "hostname": "d4077",
+    "seed": 0,
+    "metric_impl": {
+      "levenshtein": "pure-python (identical values)",
+      "lemmatizer": "spacy/en_core_web_sm (matches paper)"
+    },
+    "torch": "2.5.1+cu121",
+    "transformers": "4.55.4",
+    "wandb": "0.23.0",
+    "numpy": "2.2.6"
+  }
+}

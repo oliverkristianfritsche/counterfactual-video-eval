@@ -1,0 +1,55 @@
+# Segment-swap arm of the sibling-quality family on TimeBlind. PERTURBED arm:
+# identical to the CD recipe (uniform k24, native resolution, timestamps on, task yesno,
+# first-token yes/no logit masses logged) plus eval.perturb: segswap — cuts the selected-frame
+# sequence at its midpoint and swaps the two halves, each half kept in forward order, so the local
+# motion stays natural while the macro before/after order flips. The most in-distribution negation of
+# the four rungs (splice caveat: events spanning the cut are mangled). Timestamps stay ascending
+# (labels no longer match the content). The REAL arm is the plain eagle_timeblind_calib.yaml
+# (uniform-k24, no perturb; the same frames are selected deterministically before the swap; segswap is
+# deterministic). Decoded offline (scripts/contrastive_decode.py).
+
+experiment:
+  type: contrastive-decoding
+  technique: video-perturbation-segswap
+
+model:
+  kind: eagle
+  checkpoint: nvidia/Eagle2.5-8B
+  attn_implementation: sdpa
+
+dataset:
+  kind: timeblind
+  root: /path/to/datasets/timeblind
+  annotations: data.jsonl
+
+video:
+  frame_source: uniform
+  candidates: 32
+  top_k: 24
+  candidate_resize: null
+  max_dynamic_tiles: 1
+  pass_timestamps: true
+  fps: 8
+
+prompt:
+  task: yesno
+
+generation:
+  max_new_tokens: 8
+  do_sample: false
+
+eval:
+  seed: 1234
+  sample_timeout_s: 300
+  results_dir: ../results
+  log_yesno_logits: true
+  perturb:
+    mode: segswap          # cut at the midpoint, swap the two halves (each forward); macro order flips
+    cut: 0.5               # cut fraction; 0.5 = midpoint (a later cut-point ensemble would vary this)
+    seed: 1234             # inert for segswap (deterministic); kept to mirror the shuffle recipe
+
+wandb:
+  project: vlm-benchmark
+  group: contrastive-decoding
+  name: eagle-tbseg-pert
+  log_every: 50

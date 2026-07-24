@@ -1,0 +1,48 @@
+# Yes/no bias calibration on TimeBlind.
+# Deliberately frame_source: uniform, NOT the native/full-video path: on the native-decode route
+# the blank_frames flag is ignored (Eagle's own fetch_video reads the real file), which would make
+# the null arm silently content-bearing. The adapter now fails fast on that combination; this
+# config is the supported route. Only TimeBlind's yes/no rows are calibrated (the A/B half needs
+# the option-token extension).
+
+experiment:
+  type: calibration
+  technique: yesno-bias-calibration
+
+model:
+  kind: eagle
+  checkpoint: nvidia/Eagle2.5-8B
+  attn_implementation: sdpa
+
+dataset:
+  kind: timeblind
+  root: /path/to/datasets/timeblind
+  annotations: data.jsonl
+
+video:
+  frame_source: uniform     # required for a valid null arm (see header)
+  candidates: 32
+  top_k: 24
+  candidate_resize: null    # native answer resolution (protocol default)
+  max_dynamic_tiles: 1
+  pass_timestamps: true
+  fps: 8
+
+prompt:
+  task: yesno
+
+generation:
+  max_new_tokens: 8         # first-token yes/no is what calibration scores
+  do_sample: false
+
+eval:
+  seed: 1234
+  sample_timeout_s: 300
+  results_dir: ../results
+  log_yesno_logits: true
+
+wandb:
+  project: vlm-benchmark
+  group: yesno-calibration
+  name: eagle-tbcal-uniform-k24
+  log_every: 50

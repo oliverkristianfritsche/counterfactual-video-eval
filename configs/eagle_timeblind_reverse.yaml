@@ -1,0 +1,55 @@
+# Reverse-anchor decoding on TimeBlind. PERTURBED arm: identical to the CD
+# recipe (uniform k24, native resolution, timestamps on, task yesno, first-token yes/no logit masses
+# logged) plus eval.perturb: reverse — flips the selected frames' ORDER (destroying the before/after
+# temporal relation) while keeping their content and ascending timestamps, so the perturbed logits
+# carry every shortcut EXCEPT temporal direction. Unlike shuffle, reversal is a per-item,
+# in-distribution "opposite-relation" sibling (a valid clip played backwards). The REAL arm is the
+# plain eagle_timeblind_calib.yaml (identical uniform-k24 recipe, no perturb — the same frames are
+# selected deterministically before the reversal; reversal is deterministic, no seed dependence).
+# Contrastive decoding combines the two offline (scripts/contrastive_decode.py) and reports all four
+# accuracies.
+
+experiment:
+  type: contrastive-decoding
+  technique: video-perturbation-reverse
+
+model:
+  kind: eagle
+  checkpoint: nvidia/Eagle2.5-8B
+  attn_implementation: sdpa
+
+dataset:
+  kind: timeblind
+  root: /path/to/datasets/timeblind
+  annotations: data.jsonl
+
+video:
+  frame_source: uniform
+  candidates: 32
+  top_k: 24
+  candidate_resize: null
+  max_dynamic_tiles: 1
+  pass_timestamps: true
+  fps: 8
+
+prompt:
+  task: yesno
+
+generation:
+  max_new_tokens: 8
+  do_sample: false
+
+eval:
+  seed: 1234
+  sample_timeout_s: 300
+  results_dir: ../results
+  log_yesno_logits: true
+  perturb:
+    mode: reverse          # flip frame order; timestamps stay ascending (labels no longer match)
+    seed: 1234             # inert for reverse (deterministic); kept to mirror the shuffle recipe
+
+wandb:
+  project: vlm-benchmark
+  group: contrastive-decoding
+  name: eagle-tbrev-pert
+  log_every: 50

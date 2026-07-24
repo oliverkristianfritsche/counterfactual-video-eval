@@ -1,0 +1,55 @@
+# Reverse-anchor decoding on MotionBlind physics — sibling-quality arm.
+# PERTURBED arm: identical to the MotionBlind calibration recipe (uniform k24, native, timestamps on, task yesno,
+# first-token yes/no logit masses logged) plus eval.perturb: reverse — flips the selected frames' ORDER
+# while keeping their content and ascending timestamps, so the perturbed logits carry every shortcut
+# EXCEPT temporal direction. This is the signal-matched sibling for the DIRECTION category: a valid clip
+# played backwards is the exact opposite before/after relation. Order-invariant physics (force/speed/
+# magnitude) should see lo_real ~ lo_rev (small |Δlo|), so the plausibility floor falls back to native
+# there. The REAL arm is an unperturbed run of eagle_motionblind_calib.yaml. Decode
+# offline with scripts/mb_reverse_decode.py (pure-difference + plausibility-floor, per category + overall).
+# The direction category is the falsification test: a semantically exact negation meeting a readout whose
+# within-pair sign test sits at chance, so the sibling should move the logits without converting to accuracy.
+
+experiment:
+  type: contrastive-decoding
+  technique: video-perturbation-reverse
+
+model:
+  kind: eagle
+  checkpoint: nvidia/Eagle2.5-8B
+  attn_implementation: sdpa
+
+dataset:
+  kind: motionblind
+  root: /path/to/datasets/motionblind
+  annotations: data_db.jsonl
+
+video:
+  frame_source: uniform
+  candidates: 32
+  top_k: 24
+  candidate_resize: null
+  max_dynamic_tiles: 1
+  pass_timestamps: true
+
+prompt:
+  task: yesno
+
+generation:
+  max_new_tokens: 8
+  do_sample: false
+
+eval:
+  seed: 1234
+  sample_timeout_s: 300
+  results_dir: ../results
+  log_yesno_logits: true
+  perturb:
+    mode: reverse          # flip frame order; timestamps stay ascending (labels no longer match)
+    seed: 1234             # inert for reverse (deterministic); kept to mirror the shuffle recipe
+
+wandb:
+  project: vlm-benchmark
+  group: contrastive-decoding
+  name: eagle-mbrev-pert
+  log_every: 20

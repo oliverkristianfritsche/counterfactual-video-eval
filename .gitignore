@@ -1,0 +1,22 @@
+# python
+__pycache__/
+*.pyc
+*.egg-info/
+.venv/
+
+# run outputs (fresh runs land alongside the shipped results/ data)
+results/run_*/
+results/merged_*/
+arms/
+**/TABLE.csv
+slurm-*.out
+slurm-*.err
+
+# W&B local files
+wandb/
+
+# OS
+.DS_Store
+
+# upstream HORNet (cloned dependency, see README)
+HORNet/

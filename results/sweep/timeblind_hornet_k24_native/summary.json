@@ -1,0 +1,71 @@
+{
+  "run_name": "eagle-tbnat-hornet-k24",
+  "model": "eagle",
+  "dataset": "timeblind",
+  "frame_source": "hornet",
+  "sampling": "hornet-k24of32",
+  "top_k": 24,
+  "fps": null,
+  "task": "yesno",
+  "experiment": {
+    "type": "Sampling and layout",
+    "technique": "frame-selection sweep (native res)"
+  },
+  "metrics": {
+    "total": 2400,
+    "errors": 0,
+    "num_videos": 600,
+    "instance_accuracy": 0.255,
+    "accuracy": 0.6745833333333333,
+    "correct": 1619,
+    "invalid_rate": 0.0,
+    "choice_dist": {
+      "1": 1369,
+      "0": 1031
+    },
+    "q_acc": 0.37916666666666665,
+    "v_acc": 0.495,
+    "i_acc": 0.255,
+    "num_complete_groups": 600,
+    "q_acc/multiple_choice": 0.43,
+    "v_acc/multiple_choice": 0.5916666666666667,
+    "i_acc/multiple_choice": 0.34,
+    "q_acc/yes_no": 0.3283333333333333,
+    "v_acc/yes_no": 0.3983333333333333,
+    "i_acc/yes_no": 0.17,
+    "accuracy/multiple_choice": 0.6983333333333334,
+    "accuracy/yes_no": 0.6508333333333334,
+    "frame_sel_s/mean": 0.7520466599515445,
+    "frame_sel_s/p50": 0.7178432870423421,
+    "frame_sel_s/p90": 1.1983415602939202,
+    "vlm_proc_s/mean": 0.6134522676636698,
+    "vlm_proc_s/p50": 0.6308789679314941,
+    "vlm_proc_s/p90": 0.7263528231997043,
+    "avg_frames": 24.0,
+    "throughput_samples_per_s": 0.7323330540774993,
+    "gpu_peak_gb": 17.841,
+    "top_k": 24,
+    "candidates": 32,
+    "sticky_rate": 0.5908333333333333,
+    "sticky_prior": 0.5099170138888889,
+    "sticky_rate/multiple_choice": 0.5366666666666666,
+    "sticky_prior/multiple_choice": 0.5000055555555556,
+    "sticky_rate/yes_no": 0.645,
+    "sticky_prior/yes_no": 0.5387347222222222
+  },
+  "environment": {
+    "harness_version": "0.2.0",
+    "python": "3.10.18",
+    "platform": "Linux-5.14.0-611.5.1.el9_7.x86_64-x86_64-with-glibc2.34",
+    "hostname": "d4079",
+    "seed": 0,
+    "metric_impl": {
+      "levenshtein": "pure-python (identical values)",
+      "lemmatizer": "spacy/en_core_web_sm (matches paper)"
+    },
+    "torch": "2.5.1+cu121",
+    "transformers": "4.55.4",
+    "wandb": "0.23.0",
+    "numpy": "2.2.6"
+  }
+}
