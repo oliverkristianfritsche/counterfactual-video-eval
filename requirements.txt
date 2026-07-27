@@ -20,3 +20,4 @@ pillow
 
 # Optional harness front-end (only needed when the matching config option is used)
 opencv-python   # optical-flow overlay (eval.flow_overlay) and frame-level image ops
+matplotlib      # selection-distribution charts and frame galleries (scripts/hornet_selection.py)
