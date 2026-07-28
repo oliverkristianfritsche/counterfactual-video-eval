@@ -47,6 +47,10 @@ Each run writes `predictions.jsonl` + `summary.json` under `results/`. Useful fl
 `--limit N`, `--selector uniform|random|hornet`, `--wandb-mode disabled`,
 `--set section.field=value`. `scripts/compare_runs.py` compares two runs with paired statistics.
 
+At model load the harness patches Eagle's cached remote code in the HF cache so
+pre-extracted frame lists carry true per-frame timestamps in the prompt (upstream hardcodes
+-1.00 s on that path); idempotent, detailed in `src/models/eagle.py`.
+
 ### HORNet frame selector
 
 `frame_source: hornet` runs the authors' cloned HORNet implementation from a `HORNet/`

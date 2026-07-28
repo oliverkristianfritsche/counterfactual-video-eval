@@ -58,8 +58,9 @@ Each `summary.json` records its recipe; the matching config in `configs/` reprod
 - **Precision.** Published runs are bf16 on H200. A different Ampere-class GPU can shift a few
   borderline items; pre-Ampere cards fall back to fp16 and will not match exactly.
 - **Timestamps.** Eagle2.5's bundled code drops caller-supplied timestamps on the frame-list
-  path (prompts show `-1.00s`). The published runs patched the cached model code; without that
-  patch, frame-selection numbers will not match. The full-video path is unaffected.
+  path (prompts show `-1.00s`, worth about -3.5 pts Acc on TimeBlind). The harness patches
+  the cached model code automatically at model load, matching the patch the published runs
+  used, so re-runs need no manual step. The full-video path is unaffected.
 
 Question text in these files comes from the TimeBlind and MotionBlind benchmarks and remains
 under their licenses.

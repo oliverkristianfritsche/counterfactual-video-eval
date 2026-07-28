@@ -45,6 +45,7 @@ class EagleModel(VLMAdapter):
         if not ckpt:
             raise ValueError("Set model.checkpoint (nvidia/Eagle2.5-8B).")
         self.torch = torch
+        self._patch_frame_timestamps(ckpt)
         # bf16 needs Ampere+ (A100/H200); older cards (V100, sm70) fall back to fp16
         dtype = torch.bfloat16 if (
             torch.cuda.is_available() and torch.cuda.get_device_capability()[0] >= 8
@@ -87,6 +88,64 @@ class EagleModel(VLMAdapter):
         print(f"[eagle] dtype={dtype} | attn(text)="
               f"{getattr(self.model.config, '_attn_implementation', '?')} | attn(vision)="
               f"{getattr(getattr(self.model.config, 'vision_config', None), '_attn_implementation', '?')}")
+
+    def _patch_frame_timestamps(self, ckpt) -> None:
+        """Rewrite Eagle's cached processing_eagle2_5_vl.py so the frame-list branch of
+        fetch_video passes caller-supplied per-frame timestamps through instead of
+        hardcoding -1, which renders literally as "Frame i sample at -1.00s" in prompts
+        (see README, "Eagle timestamps patch"). Must run BEFORE transformers imports the
+        remote code; transformers 4.55 filecmp-syncs the patched snapshot into
+        transformers_modules, so patching the snapshot is sufficient (existing module
+        copies are patched too in case a stale one predates this load). Idempotent;
+        no-ops once upstream accepts timestamps itself; raises if upstream changed shape,
+        so a frame-list run can never silently mislabel its temporal metadata."""
+        from pathlib import Path
+        marker = "patched: timestamps passthrough"
+        old_pop = (
+            '        process_info = ele.copy()\n'
+            '        process_info.pop("type", None)\n'
+            '        process_info.pop("video", None)'
+        )
+        # pop, not get: **process_info is splatted into fetch_image per frame below
+        new_pop = old_pop + '\n        _caller_ts = process_info.pop("timestamps", None)  # ' + marker
+        old_ts = '        timestamps = [-1 for i in range(nframes)] # not sure about this'
+        # nframes may be rounded up with the last frame duplicated; pad timestamps to match
+        new_ts = (
+            '        if _caller_ts is not None:  # ' + marker + '\n'
+            '            timestamps = list(_caller_ts) + [_caller_ts[-1]] * (nframes - len(_caller_ts))\n'
+            '        else:\n    ' + old_ts
+        )
+        fname = "processing_eagle2_5_vl.py"
+        targets = []
+        if Path(ckpt).is_dir():
+            targets.append(Path(ckpt) / fname)
+        else:
+            try:
+                from huggingface_hub import hf_hub_download
+                targets.append(Path(hf_hub_download(ckpt, fname)))
+            except Exception:  # offline node: fall back to the warm snapshot cache
+                from huggingface_hub.constants import HF_HUB_CACHE
+                repo = "models--" + str(ckpt).replace("/", "--")
+                targets += sorted(Path(HF_HUB_CACHE).glob(f"{repo}/snapshots/*/{fname}"))
+        try:
+            from transformers.utils import HF_MODULES_CACHE
+            targets += sorted(Path(HF_MODULES_CACHE).glob(f"transformers_modules/**/{fname}"))
+        except ImportError:
+            pass
+        if not targets:
+            raise RuntimeError(f"cannot locate {fname} for {ckpt} (no download, no cache)")
+        for f in targets:
+            if not f.exists():
+                continue
+            s = f.read_text()
+            if marker in s or 'process_info.pop("timestamps"' in s:
+                continue  # already patched / upstream ships the fix
+            if old_pop not in s or old_ts not in s:
+                raise RuntimeError(
+                    f"{f}: fetch_video changed upstream — timestamps passthrough cannot "
+                    "be applied, frame-list runs would mislabel temporal metadata")
+            f.write_text(s.replace(old_pop, new_pop).replace(old_ts, new_ts))
+            print(f"[eagle] timestamps passthrough patched: {f}")
 
     # ---- selection stage (timed separately by the runner) ----
     def select_frames(self, sample) -> list:

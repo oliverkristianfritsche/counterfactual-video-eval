@@ -5,10 +5,6 @@ Structure mirrors TimeBlind's yes/no half (verified 2026-07-17): 388 records / 9
 4 records per pair, sample_id = index//4, role = index%4, gold pattern (yes,no,no,yes),
 balanced 194 yes / 194 no. I_Acc requires all 4 of a group correct. Chance = 50%.
 
-CANONICAL annotation file is data_db.jsonl (NOT data.jsonl — that's a stale 124-record
-draft with mismatched/misspelled video paths). Schema:
-    {"index", "video_path": "<category>/<file>.mp4", "question", "answer": yes|no, "type": yes_no}
-
 video_path's leading folder is one of 9 physics-reasoning categories (force, speed,
 direction, magnitude, duration, state-transitions, causal_contingency,
 fine-grained_action, temporal-topology). We set Sample.category to that so metrics break
