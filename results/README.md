@@ -1,10 +1,10 @@
 # Results
 
-Logged outputs of the 46 published Eagle2.5-8B runs; every reported number recomputes from these
-files alone. Each run dir holds `predictions.jsonl` (ids, pair role, category, ground truth
-answer, model answer, first-token option log-masses) and `summary.json`. Fresh harness runs also
-land here as git-ignored `run_*/` dirs; the tracked `sweep/` and `decode/` trees are the shipped
-set.
+This folder holds the logged outputs of the 46 published Eagle2.5-8B runs. Every reported
+number recomputes from these files alone. Each run dir holds `predictions.jsonl` (ids,
+pair role, category, ground truth answer, model answer, first-token option log-masses)
+and `summary.json`. Fresh harness runs also land here as git-ignored `run_*/` dirs. The
+tracked `sweep/` and `decode/` trees are the shipped set.
 
 ## `sweep/` (30 runs)
 
@@ -17,8 +17,9 @@ python scripts/make_table.py results/sweep
 
 ## `decode/` (16 runs)
 
-Real and perturbed arms (uniform k24, native, logits logged). Frames are selected before
-perturbation, so a real arm and a perturbed arm share the exact frame set.
+Real and perturbed arms (uniform k24, native, logits logged). The harness selects the
+frames before the perturbation, so a real arm and a perturbed arm share the exact frame
+set.
 
 | | TimeBlind (2400) | MotionBlind (388) |
 |---|---|---|
@@ -27,6 +28,26 @@ perturbation, so a real arm and a perturbed arm share the exact frame set.
 | reversed | `timeblind_reverse` | `motionblind_reverse` |
 | segment-swapped | `timeblind_segswap` | `motionblind_segswap` |
 | block-shuffled | `timeblind_blockshuffle` | `motionblind_blockshuffle` |
+
+## `hornet_parity.json`
+
+This file shows that the harness selects the same frames as the HORNet authors' own
+`select_frames` pipeline. The check runs 10 clips per benchmark at each k in
+{1, 4, 8, 16, 24}. One checkpoint-loaded policy serves both paths. The file records the
+selected indices from both paths, the full 32-slot keep-probability vectors, and an
+unrelated-frame probe (frames from another video, uniform noise frames, and black frames
+planted into the candidate pool). The two paths agree exactly when the decoded pixels
+agree. Selection is top-k over the keep probabilities, so a difference can only enter
+through a tie. Some clips have tied keep probabilities; on such a clip decoder jitter can
+swap the tied frames at a top-k boundary. Decoder jitter: decord's multi-threaded decode
+is not bit-stable, so two decodes of the same file can differ in the last bits of some
+pixels (single-threaded decode is bit-stable). The upstream code alone shows the same
+behavior. `slurm/verify_hornet_parity.sh` runs
+`scripts/verify_hornet_parity.py` to produce the file; figures:
+
+```
+python scripts/plot_hornet_parity.py results/hornet_parity.json --out-dir analysis/figs
+```
 
 ## Reproducing the published numbers
 
@@ -52,15 +73,17 @@ python scripts/motioncd_decode.py \
 
 ## Regenerating on a GPU
 
-Each `summary.json` records its recipe; the matching config in `configs/` reproduces it once
-`dataset.root` points at the data (see `slurm/`). Two caveats:
+Each `summary.json` records its recipe. The matching config in `configs/` reproduces it
+once `dataset.root` points at the data (see `slurm/`). Two caveats:
 
-- **Precision.** Published runs are bf16 on H200. A different Ampere-class GPU can shift a few
-  borderline items; pre-Ampere cards fall back to fp16 and will not match exactly.
-- **Timestamps.** Eagle2.5's bundled code drops caller-supplied timestamps on the frame-list
-  path (prompts show `-1.00s`, worth about -3.5 pts Acc on TimeBlind). The harness patches
-  the cached model code automatically at model load, matching the patch the published runs
-  used, so re-runs need no manual step. The full-video path is unaffected.
+- **Precision.** The published runs are bf16 on H200. A different Ampere-class GPU can
+  shift a few borderline items. Pre-Ampere cards fall back to fp16 and will not match
+  exactly.
+- **Timestamps.** Eagle2.5's bundled code drops caller-supplied timestamps on the
+  frame-list path (prompts show `-1.00s`, worth about -3.5 pts Acc on TimeBlind). The
+  harness patches the cached model code automatically at model load. This matches the
+  patch the published runs used, so re-runs need no manual step. The full-video path is
+  unaffected.
 
-Question text in these files comes from the TimeBlind and MotionBlind benchmarks and remains
-under their licenses.
+The question text in these files comes from the TimeBlind and MotionBlind benchmarks and
+stays under their licenses.

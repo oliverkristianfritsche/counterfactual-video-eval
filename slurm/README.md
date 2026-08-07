@@ -1,7 +1,8 @@
 # SLURM replication scripts
 
-One self-contained script per experiment; each produces its runs and prints that experiment's
-tables. Submit from the repo root; adjust the `#SBATCH` directives for your site.
+One self-contained script per experiment. Each script produces its runs and prints the
+tables of that experiment. Submit from the repo root. Adjust the `#SBATCH` directives for
+your site.
 
 | Script | Reproduces |
 |---|---|
@@ -9,6 +10,7 @@ tables. Submit from the repo root; adjust the `#SBATCH` directives for your site
 | `pairwise_argmax.sh` | pairwise argmax |
 | `contrastive_decoding.sh` | contrastive decoding |
 | `motioncd.sh` | MotionCD comparison |
+| `verify_hornet_parity.sh` | HORNet selection parity and planted-frame probe (CPU only: the policy is small and Eagle never loads); writes `results/hornet_parity.json` |
 
 | Variable | Meaning |
 |---|---|
@@ -24,7 +26,8 @@ sbatch slurm/contrastive_decoding.sh
 sbatch slurm/motioncd.sh
 ```
 
-The three decode scripts run fine without a scheduler (`bash slurm/motioncd.sh`); only the sweep
-needs `sbatch` for its array. The sweep writes to `results/`, decode arms to `arms/`. Published
-runs used bf16 on H200; request an Ampere-or-newer GPU for an exact reproduction (pre-Ampere
-falls back to fp16 and will not match bit for bit).
+The three decode scripts also run without a scheduler (`bash slurm/motioncd.sh`). Only
+the sweep needs `sbatch` for its array. The sweep writes to `results/`, the decode arms
+write to `arms/`. The published runs used bf16 on H200. Request an Ampere-or-newer GPU
+for an exact reproduction; pre-Ampere cards fall back to fp16 and will not match bit for
+bit.
